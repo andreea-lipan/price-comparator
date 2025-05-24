@@ -6,10 +6,7 @@ import accesa.pricecomparatorbe.persistence.UserRepository;
 import accesa.pricecomparatorbe.services.AuthService;
 import accesa.pricecomparatorbe.validators.UserValidator;
 import accesa.pricecomparatorbe.validators.ValidationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class AuthServiceImpl implements AuthService {
