@@ -34,8 +34,11 @@ public class ProductServiceImpl implements ProductService {
     public void addProduct(ProductDTO productDTO) throws ValidationException {
         productValidator.validateProductDTO(productDTO);
 
-        Category category = categoryRepository.getCategoryByName(productDTO.getCategory());
-        Brand brand = brandRepository.getBrandByName(productDTO.getBrand());
+        Category category = categoryRepository.findById(productDTO.getCategoryId())
+            .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Brand brand = brandRepository.findById(productDTO.getBrandId())
+            .orElseThrow(() -> new RuntimeException("Brand not found"));
 
         Product product = Product.builder()
                 .name(productDTO.getName())

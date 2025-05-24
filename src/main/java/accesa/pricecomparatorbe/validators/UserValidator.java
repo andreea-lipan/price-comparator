@@ -2,7 +2,6 @@ package accesa.pricecomparatorbe.validators;
 
 import accesa.pricecomparatorbe.dtos.UserDTO;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 public class UserValidator {

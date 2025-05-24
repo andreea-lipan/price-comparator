@@ -6,25 +6,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductValidator {
 
-    public void validateProductDTO(ProductDTO productDTO) throws ValidationException {
+    public void validateProductDTO(ProductDTO dto) throws ValidationException {
         String errorMessage = "";
 
-        if (productDTO == null) {
+        if (dto == null) {
             errorMessage += "Product data must not be null!\n";
         } else {
-            if (productDTO.getName() == null || productDTO.getName().trim().isEmpty()) {
+            if (dto.getName() == null || dto.getName().trim().isEmpty()) {
                 errorMessage += "Product name is required!\n";
             }
-            if (productDTO.getCategory() == null || productDTO.getCategory().trim().isEmpty()) {
+            if (dto.getCategoryId() == null || dto.getCategoryId() <= 0) {
                 errorMessage += "Product category is required!\n";
             }
-            if (productDTO.getBrand() == null || productDTO.getBrand().trim().isEmpty()) {
+            if (dto.getBrandId() == null || dto.getBrandId() <= 0) {
                 errorMessage += "Product brand is required!\n";
             }
-            if (productDTO.getQuantity() == null || productDTO.getQuantity().compareTo(0.0) <= 0) {
+            if (dto.getQuantity() == null || dto.getQuantity() <= 0) {
                 errorMessage += "Product quantity is required and it must be a positive number!\n";
             }
-            if (productDTO.getUnit() == null || productDTO.getUnit().trim().isEmpty()) {
+            if (dto.getUnit() == null || dto.getUnit().trim().isEmpty()) {
                 errorMessage += "Product unit is required!\n";
             }
         }

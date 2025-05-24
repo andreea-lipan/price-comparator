@@ -4,7 +4,6 @@ import accesa.pricecomparatorbe.model.AppUser;
 import accesa.pricecomparatorbe.persistence.UserRepository;
 import accesa.pricecomparatorbe.services.UserService;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service

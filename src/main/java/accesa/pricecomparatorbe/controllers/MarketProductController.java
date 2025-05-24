@@ -1,25 +1,28 @@
 package accesa.pricecomparatorbe.controllers;
 
+import accesa.pricecomparatorbe.dtos.MarketProductDTO;
 import accesa.pricecomparatorbe.dtos.ProductDTO;
+import accesa.pricecomparatorbe.model.MarketProduct;
+import accesa.pricecomparatorbe.services.MarketProductService;
 import accesa.pricecomparatorbe.services.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/product")
-public class ProductController {
+@RequestMapping("/api/market-product")
+public class MarketProductController {
 
-    private final ProductService productService;
+    private final MarketProductService marketProductService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
+    public MarketProductController(MarketProductService marketProductService) {
+        this.marketProductService = marketProductService;
     }
 
     @PostMapping
-    public ResponseEntity<?> addProduct(@RequestBody ProductDTO productDTO) {
+    public ResponseEntity<?> addProduct(@RequestBody MarketProductDTO marketProductDTO) {
         try {
-            productService.addProduct(productDTO);
+            marketProductService.addProduct(marketProductDTO);
             return ResponseEntity.ok("Product added successfully!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -29,7 +32,7 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<?> getProducts() {
         try {
-            return ResponseEntity.ok(productService.getProducts());
+            return ResponseEntity.ok(marketProductService.getProducts());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
