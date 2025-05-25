@@ -2,6 +2,8 @@ package accesa.pricecomparatorbe.controllers;
 
 import accesa.pricecomparatorbe.dtos.BestDiscountDTO;
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
+import accesa.pricecomparatorbe.dtos.UpdateDiscountDTO;
+import accesa.pricecomparatorbe.dtos.UpdatePriceDTO;
 import accesa.pricecomparatorbe.services.MarketProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +53,48 @@ public class MarketProductController {
             return ResponseEntity.ok(marketProductService.getProductsWithLatestDiscounts());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("An error occurred: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/price")
+    public ResponseEntity<?> updateProductPrice(@PathVariable Long id,
+                                                @RequestBody UpdatePriceDTO dto) {
+        try {
+            marketProductService.updateProductPrice(id, dto);
+            return ResponseEntity.ok("Product updated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/discount")
+    public ResponseEntity<?> updateProductPrice(@PathVariable Long id,
+                                                @RequestBody UpdateDiscountDTO dto) {
+        try {
+            marketProductService.updateProductDiscount(id, dto);
+            return ResponseEntity.ok("Product updated successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/history")
+    public ResponseEntity<?> getProductPriceHistory(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(marketProductService.getHistoryForProduct(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/histories")
+    public ResponseEntity<?> getProductPriceHistory(@RequestParam(defaultValue = "-1") Long retailerId,
+                                                    @RequestParam(defaultValue = "-1") Long categoryId,
+                                                    @RequestParam(defaultValue = "-1") Long brandId) {
+        try {
+            return ResponseEntity.ok(marketProductService.getHistories(retailerId, categoryId, brandId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

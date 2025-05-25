@@ -12,23 +12,17 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
-public class Discount {
+public class Price {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate startDate;
+    private Double value;
 
-    private LocalDate endDate;
-
-    private Double value = 0.0;
-
-    public Boolean isDiscountCurrent() {
-        return !LocalDate.now().isBefore(startDate) && !LocalDate.now().isAfter(endDate);
-    }
+    private LocalDate dateAdded;
 }

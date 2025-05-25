@@ -20,7 +20,8 @@ public class MarketProduct {
     @ManyToOne
     private Product product;
 
-    private Double price;
+    @OneToOne
+    private Price currentPrice;
 
     @ManyToOne
     private Currency currency;
@@ -28,14 +29,14 @@ public class MarketProduct {
     @ManyToOne
     private Retailer retailer;
 
-    @ManyToOne
+    @OneToOne
     private Discount discount;
 
     public double getPriceWithDiscount() {
         if (discount != null) {
-            return price * (1 - discount.getValue() / 100);
+            return currentPrice.getValue() * (1 - discount.getValue() / 100);
         }
-        return price;
+        return currentPrice.getValue();
     }
 
     public boolean hasActiveDiscount() {

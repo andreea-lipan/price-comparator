@@ -1,6 +1,9 @@
 package accesa.pricecomparatorbe.services.impl;
 
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
+import accesa.pricecomparatorbe.dtos.UpdateDiscountDTO;
+import accesa.pricecomparatorbe.dtos.UpdatePriceDTO;
+import accesa.pricecomparatorbe.model.Currency;
 import accesa.pricecomparatorbe.model.*;
 import accesa.pricecomparatorbe.persistence.MarketProductRepository;
 import accesa.pricecomparatorbe.services.*;
@@ -10,8 +13,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class MarketProductServiceImpl implements MarketProductService {
@@ -22,16 +24,20 @@ public class MarketProductServiceImpl implements MarketProductService {
     private final RetailerService retailerService;
     private final CurrencyService currencyService;
     private final DiscountService discountService;
+    private final PriceService priceService;
+    private final PriceHistoryService priceHistoryService;
 
     public MarketProductServiceImpl(MarketProductRepository marketProductRepository, MarketProductValidator marketProductValidator,
                                     ProductService productService, RetailerService retailerService, CurrencyService currencyService,
-                                    DiscountService discountService) {
+                                    DiscountService discountService, PriceService priceService, PriceHistoryService priceHistoryService) {
         this.marketProductRepository = marketProductRepository;
         this.marketProductValidator = marketProductValidator;
         this.productService = productService;
         this.retailerService = retailerService;
         this.currencyService = currencyService;
         this.discountService = discountService;
+        this.priceService = priceService;
+        this.priceHistoryService = priceHistoryService;
     }
 
     @Override
@@ -49,21 +55,29 @@ public class MarketProductServiceImpl implements MarketProductService {
 
         Currency currency = currencyService.getCurrencyById(marketProductDTO.getCurrencyId());
         Discount discount = discountService.addDiscount(marketProductDTO);
+        Price price = priceService.addPrice(marketProductDTO.getPrice(), marketProductDTO.getDateAddedPrice());
 
         MarketProduct marketProduct = MarketProduct.builder()
                 .product(product)
-                .price(marketProductDTO.getPrice())
+                .currentPrice(price)
                 .currency(currency)
                 .retailer(retailer)
                 .discount(discount)
                 .build();
 
         marketProductRepository.save(marketProduct);
+        priceHistoryService.createPriceHistory(marketProduct, price, discount);
     }
 
     @Override
     public List<MarketProduct> getProducts() {
         return marketProductRepository.findAll();
+    }
+
+    @Override
+    public MarketProduct getMarketProductById(Long id) {
+        return marketProductRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Couldn't find the product!"));
     }
 
     @Override
@@ -73,7 +87,6 @@ public class MarketProductServiceImpl implements MarketProductService {
                 .min(Comparator.comparingDouble(MarketProduct::getPriceWithDiscount))
                 .orElseThrow(() -> new EntityNotFoundException("Couldn't find cheapest product!"));
     }
-
 
     /**
      * Finds the top productPercentage% of products which have the highest discounts across all retailers
@@ -111,5 +124,71 @@ public class MarketProductServiceImpl implements MarketProductService {
                 .filter(prod -> prod.hasActiveDiscount() &&
                         !prod.getDiscount().getStartDate().isBefore(LocalDate.now().minusDays(1)))
                 .toList();
+    }
+
+    @Override
+    public void updateProductPrice(Long prodId, UpdatePriceDTO dto) throws ValidationException {
+        marketProductValidator.validateUpdatePriceDTO(dto);
+
+        Price price = priceService.addPrice(dto.getPrice(), dto.getPriceAddedDate());
+
+        // update market prod value
+        MarketProduct product = getMarketProductById(prodId);
+        product.setCurrentPrice(price);
+        marketProductRepository.save(product);
+
+        // add the price to history
+        priceHistoryService.updatePriceHistory(price, product);
+    }
+
+    @Override
+    public void updateProductDiscount(Long prodId, UpdateDiscountDTO dto) throws ValidationException {
+        marketProductValidator.validateUpdateDiscountDTO(dto);
+
+        Discount discount = discountService.addDiscount(dto);
+
+        MarketProduct product = getMarketProductById(prodId);
+        product.setDiscount(discount);
+        marketProductRepository.save(product);
+
+        priceHistoryService.updateDiscountHistory(discount, product);
+    }
+
+    @Override
+    public PriceHistory getHistoryForProduct(Long id) {
+        MarketProduct product = getMarketProductById(id);
+        return priceHistoryService.getHistoryByProduct(product);
+    }
+
+    private boolean filterByRetailer(Long retailerId, MarketProduct prod) {
+        if (retailerId == -1)
+            return true;
+        return Objects.equals(prod.getRetailer().getId(), retailerId);
+    }
+
+    private boolean filterByCategory(Long categoryId, MarketProduct prod) {
+        if (categoryId == -1)
+            return true;
+        return Objects.equals(prod.getProduct().getCategory().getId(), categoryId);
+    }
+
+    private boolean filterByBrand(Long brandId, MarketProduct prod) {
+        if (brandId == -1)
+            return true;
+        return Objects.equals(prod.getProduct().getCategory().getId(), brandId);
+    }
+
+    @Override
+    public Map<MarketProduct, TreeMap<LocalDate, Double>> getHistories(Long retailerId, Long categoryId, Long brandId) {
+        Map<MarketProduct, TreeMap<LocalDate, Double>> prices = new HashMap<>();
+        List<MarketProduct> products = getProducts().stream()
+                .filter(p -> filterByRetailer(retailerId, p))
+                .filter(p -> filterByCategory(categoryId, p))
+                .filter(p -> filterByBrand(brandId, p))
+                .toList();
+        for (MarketProduct p : getProducts()) {
+            prices.put(p, priceHistoryService.computeHistoryForMarketProduct(p));
+        }
+        return prices;
     }
 }
