@@ -1,5 +1,6 @@
 package accesa.pricecomparatorbe.services.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import accesa.pricecomparatorbe.services.RetailerService;
@@ -36,4 +37,12 @@ public class RetailerServiceImpl implements RetailerService {
     public List<Retailer> getRetailers() {
         return retailerRepository.findAll();
     }
+
+    @Override
+    public Retailer getRetailerById(Long retailerId) {
+        return retailerRepository.findById(retailerId)
+                .orElseThrow(() -> new EntityNotFoundException("Retailer not found!"));
+    }
+
+
 }

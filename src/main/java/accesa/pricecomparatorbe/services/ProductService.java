@@ -10,4 +10,6 @@ public interface ProductService {
     void addProduct(ProductDTO productDTO) throws ValidationException;
 
     List<Product> getProducts();
+
+    Product getProductById(Long productId);
 }

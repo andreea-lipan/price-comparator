@@ -5,4 +5,6 @@ import java.util.List;
 
 public interface UserService {
     List<AppUser> getUsers();
+
+    AppUser getUserById(Long userId);
 }

@@ -1,5 +1,6 @@
 package accesa.pricecomparatorbe.services.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import accesa.pricecomparatorbe.services.BrandService;
@@ -35,5 +36,11 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public List<Brand> getBrands() {
         return brandRepository.findAll();
+    }
+
+    @Override
+    public Brand getBrandById(Long brandId) {
+        return brandRepository.findById(brandId)
+                .orElseThrow(() -> new EntityNotFoundException("Brand not found!"));
     }
 }

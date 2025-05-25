@@ -30,4 +30,11 @@ public class MarketProduct {
 
     @ManyToOne
     private Discount discount;
+
+    public double getPriceWithDiscount() {
+        if (discount != null) {
+            return price * (1 - discount.getValue() / 100);
+        }
+        return price;
+    }
 }

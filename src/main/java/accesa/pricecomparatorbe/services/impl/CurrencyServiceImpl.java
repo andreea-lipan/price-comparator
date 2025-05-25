@@ -1,5 +1,6 @@
 package accesa.pricecomparatorbe.services.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import accesa.pricecomparatorbe.model.Currency;
@@ -35,5 +36,11 @@ public class CurrencyServiceImpl implements CurrencyService {
     @Override
     public List<Currency> getCurrencies() {
         return currencyRepository.findAll();
+    }
+
+    @Override
+    public Currency getCurrencyById(Long currencyId) {
+        return currencyRepository.findById(currencyId)
+                .orElseThrow(() -> new EntityNotFoundException("Currency not found!"));
     }
 }

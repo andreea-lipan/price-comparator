@@ -12,4 +12,6 @@ public interface BrandService {
     void addBrand(BrandDTO brandDTO) throws ValidationException;
     
     List<Brand> getBrands();
+
+    Brand getBrandById(Long brandId);
 }

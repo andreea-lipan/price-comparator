@@ -12,4 +12,6 @@ public interface CategoryService {
     void addCategory(CategoryDTO categoryDTO) throws ValidationException;
 
     List<Category> getCategories();
+
+    Category getCategoryById(Long categoryId);
 }

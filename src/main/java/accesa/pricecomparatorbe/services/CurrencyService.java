@@ -10,4 +10,6 @@ public interface CurrencyService {
     void addCurrency(CurrencyDTO currencyDTO) throws ValidationException;
 
     List<Currency> getCurrencies();
+
+    Currency getCurrencyById(Long currencyId);
 }

@@ -3,10 +3,12 @@ package accesa.pricecomparatorbe.services.impl;
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
 import accesa.pricecomparatorbe.model.*;
 import accesa.pricecomparatorbe.persistence.*;
-import accesa.pricecomparatorbe.services.MarketProductService;
+import accesa.pricecomparatorbe.services.*;
 import accesa.pricecomparatorbe.validators.MarketProductValidator;
 import accesa.pricecomparatorbe.validators.ValidationException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -14,50 +16,45 @@ public class MarketProductServiceImpl implements MarketProductService {
 
     private final MarketProductRepository marketProductRepository;
     private final MarketProductValidator marketProductValidator;
-    private final ProductRepository productRepository;
-    private final RetailerRepository retailerRepository;
-    private final CurrencyRepository currencyRepository;
-    private final DiscountRepository discountRepository;
+    private final ProductService productService;
+    private final RetailerService retailerService;
+    private final CurrencyService currencyService;
+    private final DiscountService discountService;
 
     public MarketProductServiceImpl(MarketProductRepository marketProductRepository, MarketProductValidator marketProductValidator,
-                                ProductRepository productRepository, RetailerRepository retailerRepository, CurrencyRepository currencyRepository,
-                                DiscountRepository discountRepository) {
+                                    ProductService productService, RetailerService retailerService, CurrencyService currencyService,
+                                    DiscountService discountService) {
         this.marketProductRepository = marketProductRepository;
         this.marketProductValidator = marketProductValidator;
-        this.productRepository = productRepository;
-        this.retailerRepository = retailerRepository;
-        this.currencyRepository = currencyRepository;
-        this.discountRepository = discountRepository;
+        this.productService = productService;
+        this.retailerService = retailerService;
+        this.currencyService = currencyService;
+        this.discountService = discountService;
     }
 
     @Override
     public void addProduct(MarketProductDTO marketProductDTO) throws ValidationException {
         marketProductValidator.validateMarketProductDTO(marketProductDTO);
 
-        Product product = productRepository.findById(marketProductDTO.getProductId())
-            .orElseThrow(() -> new RuntimeException("Product not found")); //todo is this exceptie okai?
+        Product product = productService.getProductById(marketProductDTO.getProductId());
+        Retailer retailer = retailerService.getRetailerById(marketProductDTO.getRetailerId());
 
-        Retailer retailer = retailerRepository.findById(marketProductDTO.getRetailerId())
-            .orElseThrow(() -> new RuntimeException("Retailer not found"));
+        // Check if this retailer already has this product
+        List<MarketProduct> existingProducts = marketProductRepository.findByRetailerAndProduct(retailer, product);
+        if (!existingProducts.isEmpty()) {
+            throw new RuntimeException("This retailer already has this product in their catalog");
+        }
 
-        Currency currency = currencyRepository.findById(marketProductDTO.getCurrencyId())
-            .orElseThrow(() -> new RuntimeException("Currency not found"));
-
-        Discount discount = Discount.builder()
-                .startDate(marketProductDTO.getStartDateDiscount())
-                .endDate(marketProductDTO.getEndDateDiscount())
-                .value(marketProductDTO.getValueDiscount())
-                .build();
-
-        discountRepository.save(discount);
+        Currency currency = currencyService.getCurrencyById(marketProductDTO.getCurrencyId());
+        Discount discount = discountService.addDiscount(marketProductDTO);
 
         MarketProduct marketProduct = MarketProduct.builder()
-            .product(product)
-            .price(marketProductDTO.getPrice())
-            .currency(currency)
-            .retailer(retailer)
-            .discount(discount)
-            .build();
+                .product(product)
+                .price(marketProductDTO.getPrice())
+                .currency(currency)
+                .retailer(retailer)
+                .discount(discount)
+                .build();
 
         marketProductRepository.save(marketProduct);
     }
@@ -65,5 +62,13 @@ public class MarketProductServiceImpl implements MarketProductService {
     @Override
     public List<MarketProduct> getProducts() {
         return marketProductRepository.findAll();
+    }
+
+    @Override
+    public MarketProduct getCheapestMarketProductForProduct(Product product) {
+        return marketProductRepository.getMarketProductsByProduct(product)
+                .stream()
+                .min(Comparator.comparingDouble(MarketProduct::getPriceWithDiscount))
+                .orElseThrow(() -> new EntityNotFoundException("Couldn't find cheapest product!"));
     }
 }

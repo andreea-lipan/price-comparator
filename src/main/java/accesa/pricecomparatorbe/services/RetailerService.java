@@ -10,4 +10,6 @@ public interface RetailerService {
     void addRetailer(RetailerDTO retailer) throws ValidationException;
 
     List<Retailer> getRetailers();
+
+    Retailer getRetailerById(Long retailerId);
 }
