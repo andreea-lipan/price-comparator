@@ -32,16 +32,12 @@ public class MarketProductController {
     @GetMapping
     public ResponseEntity<?> getProducts(@RequestParam(defaultValue = "false") boolean withUnit) {
         try {
-            System.out.println("Hi");
             if (withUnit) {
-                System.out.println("With");
                 return ResponseEntity.ok(marketProductService.getProductsWithPricePerUnit());
             } else {
-                System.out.println("Without");
                 return ResponseEntity.ok(marketProductService.getProducts());
             }
         } catch (Exception e) {
-            System.out.println("Die");
             return ResponseEntity.badRequest().body("An error occurred: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
         }
     }

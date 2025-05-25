@@ -22,6 +22,8 @@ public interface MarketProductService {
 
     MarketProduct getMarketProductById(Long id);
 
+    List<MarketProduct> getMarketProductByProduct(Product product);
+
     MarketProduct getCheapestMarketProductForProduct(Product product);
 
     List<MarketProduct> getProductsWithHighestDiscount(int productPercentage);

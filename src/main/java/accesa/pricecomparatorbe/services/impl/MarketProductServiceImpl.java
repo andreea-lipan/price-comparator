@@ -28,10 +28,12 @@ public class MarketProductServiceImpl implements MarketProductService {
     private final DiscountService discountService;
     private final PriceService priceService;
     private final PriceHistoryService priceHistoryService;
+    //private final UserAlertService userAlertService;
 
     public MarketProductServiceImpl(MarketProductRepository marketProductRepository, MarketProductValidator marketProductValidator,
                                     ProductService productService, RetailerService retailerService, CurrencyService currencyService,
-                                    DiscountService discountService, PriceService priceService, PriceHistoryService priceHistoryService) {
+                                    DiscountService discountService, PriceService priceService,
+                                    PriceHistoryService priceHistoryService) {
         this.marketProductRepository = marketProductRepository;
         this.marketProductValidator = marketProductValidator;
         this.productService = productService;
@@ -40,6 +42,7 @@ public class MarketProductServiceImpl implements MarketProductService {
         this.discountService = discountService;
         this.priceService = priceService;
         this.priceHistoryService = priceHistoryService;
+//        this.userAlertService = userAlertService;
     }
 
     @Override
@@ -94,6 +97,11 @@ public class MarketProductServiceImpl implements MarketProductService {
                 .orElseThrow(() -> new EntityNotFoundException("Couldn't find cheapest product!"));
     }
 
+    @Override
+    public List<MarketProduct> getMarketProductByProduct(Product product) {
+        return marketProductRepository.getMarketProductsByProduct(product);
+    }
+
     /**
      * Finds the top productPercentage% of products which have the highest discounts across all retailers
      *
@@ -145,6 +153,9 @@ public class MarketProductServiceImpl implements MarketProductService {
 
         // add the price to history
         priceHistoryService.updatePriceHistory(price, product);
+
+        // check for price alerts to notify users
+        // userAlertService.checkAlertsForProducts(product.getProduct());
     }
 
     @Override
@@ -158,6 +169,9 @@ public class MarketProductServiceImpl implements MarketProductService {
         marketProductRepository.save(product);
 
         priceHistoryService.updateDiscountHistory(discount, product);
+
+        // check for price alerts to notify users
+        // userAlertService.checkAlertsForProducts(product.getProduct());
     }
 
     @Override
