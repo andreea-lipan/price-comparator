@@ -4,6 +4,7 @@ import accesa.pricecomparatorbe.dtos.MarketProductDTO;
 import accesa.pricecomparatorbe.model.MarketProduct;
 import accesa.pricecomparatorbe.model.Product;
 import accesa.pricecomparatorbe.validators.ValidationException;
+
 import java.util.List;
 
 public interface MarketProductService {
@@ -13,4 +14,8 @@ public interface MarketProductService {
     List<MarketProduct> getProducts();
 
     MarketProduct getCheapestMarketProductForProduct(Product product);
+
+    List<MarketProduct> getProductsWithHighestDiscount(int productPercentage);
+
+    List<MarketProduct> getProductsWithLatestDiscounts();
 }

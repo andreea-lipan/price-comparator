@@ -2,12 +2,14 @@ package accesa.pricecomparatorbe.services.impl;
 
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
 import accesa.pricecomparatorbe.model.*;
-import accesa.pricecomparatorbe.persistence.*;
+import accesa.pricecomparatorbe.persistence.MarketProductRepository;
 import accesa.pricecomparatorbe.services.*;
 import accesa.pricecomparatorbe.validators.MarketProductValidator;
 import accesa.pricecomparatorbe.validators.ValidationException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 
@@ -70,5 +72,44 @@ public class MarketProductServiceImpl implements MarketProductService {
                 .stream()
                 .min(Comparator.comparingDouble(MarketProduct::getPriceWithDiscount))
                 .orElseThrow(() -> new EntityNotFoundException("Couldn't find cheapest product!"));
+    }
+
+
+    /**
+     * Finds the top productPercentage% of products which have the highest discounts across all retailers
+     *
+     * @param productPercentage the amount of products to be returned in percentage form
+     * @return - the list of products with the highest discount across all retailers
+     */
+    @Override
+    public List<MarketProduct> getProductsWithHighestDiscount(int productPercentage) {
+        List<MarketProduct> products = getProducts();
+
+        // Only keep the products with discounts still available
+        // Sort products by discount value in descending order
+        List<MarketProduct> filtered = products.stream()
+                .filter(MarketProduct::hasActiveDiscount)
+                .toList();
+
+        // Calculate number of products based on percentage
+        int nrOfProducts = (int) Math.ceil((productPercentage / 100.0) * filtered.size());
+
+        return filtered.stream()
+                .sorted(Comparator.comparing(
+                        prod -> prod.getDiscount().getValue(),
+                        Comparator.reverseOrder()
+                ))
+                .limit(nrOfProducts)
+                .toList();
+    }
+
+    @Override
+    public List<MarketProduct> getProductsWithLatestDiscounts() {
+        List<MarketProduct> products = getProducts();
+
+        return products.stream()
+                .filter(prod -> prod.hasActiveDiscount() &&
+                        !prod.getDiscount().getStartDate().isBefore(LocalDate.now().minusDays(1)))
+                .toList();
     }
 }

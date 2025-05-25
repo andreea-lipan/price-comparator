@@ -37,4 +37,8 @@ public class MarketProduct {
         }
         return price;
     }
+
+    public boolean hasActiveDiscount() {
+        return discount != null && discount.isDiscountCurrent();
+    }
 }

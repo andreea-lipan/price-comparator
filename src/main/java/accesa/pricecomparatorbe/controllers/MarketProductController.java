@@ -1,10 +1,8 @@
 package accesa.pricecomparatorbe.controllers;
 
+import accesa.pricecomparatorbe.dtos.BestDiscountDTO;
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
-import accesa.pricecomparatorbe.dtos.ProductDTO;
-import accesa.pricecomparatorbe.model.MarketProduct;
 import accesa.pricecomparatorbe.services.MarketProductService;
-import accesa.pricecomparatorbe.services.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +33,24 @@ public class MarketProductController {
             return ResponseEntity.ok(marketProductService.getProducts());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/best-discounts")
+    public ResponseEntity<?> getBestDiscountsProducts(@RequestBody BestDiscountDTO howManyProducts) {
+        try {
+            return ResponseEntity.ok(marketProductService.getProductsWithHighestDiscount(howManyProducts.getHowManyProducts()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/new-discounts")
+    public ResponseEntity<?> getNewestDiscountedProducts() {
+        try {
+            return ResponseEntity.ok(marketProductService.getProductsWithLatestDiscounts());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("An error occurred: " + e.getClass().getSimpleName() + " -> " + e.getMessage());
         }
     }
 }
