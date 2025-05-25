@@ -1,6 +1,7 @@
 package accesa.pricecomparatorbe.services.impl;
 
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
+import accesa.pricecomparatorbe.dtos.ProductWithPricePerUnitDTO;
 import accesa.pricecomparatorbe.dtos.UpdateDiscountDTO;
 import accesa.pricecomparatorbe.dtos.UpdatePriceDTO;
 import accesa.pricecomparatorbe.model.Currency;
@@ -10,6 +11,7 @@ import accesa.pricecomparatorbe.services.*;
 import accesa.pricecomparatorbe.validators.MarketProductValidator;
 import accesa.pricecomparatorbe.validators.ValidationException;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -54,7 +56,11 @@ public class MarketProductServiceImpl implements MarketProductService {
         }
 
         Currency currency = currencyService.getCurrencyById(marketProductDTO.getCurrencyId());
-        Discount discount = discountService.addDiscount(marketProductDTO);
+
+        Discount discount = null;
+        if (marketProductDTO.getStartDateDiscount() != null && marketProductDTO.getEndDateDiscount() != null && marketProductDTO.getValueDiscount() != 0.0)
+            discount = discountService.addDiscount(marketProductDTO);
+
         Price price = priceService.addPrice(marketProductDTO.getPrice(), marketProductDTO.getDateAddedPrice());
 
         MarketProduct marketProduct = MarketProduct.builder()
@@ -186,9 +192,31 @@ public class MarketProductServiceImpl implements MarketProductService {
                 .filter(p -> filterByCategory(categoryId, p))
                 .filter(p -> filterByBrand(brandId, p))
                 .toList();
-        for (MarketProduct p : getProducts()) {
+        for (MarketProduct p : products) {
             prices.put(p, priceHistoryService.computeHistoryForMarketProduct(p));
         }
         return prices;
+    }
+
+    @Override
+    public List<ProductWithPricePerUnitDTO> getProductsWithPricePerUnit() {
+        List<MarketProduct> products = getProducts();
+        List<ProductWithPricePerUnitDTO> unitProducts = new ArrayList<>();
+
+        System.out.println("Managed to grad =rods");
+        System.out.println(products);
+
+        for (MarketProduct p : products) {
+            Pair<String, Double> value = p.getValuePerUnit();
+            ProductWithPricePerUnitDTO unitProd = ProductWithPricePerUnitDTO.builder()
+                    .product(p)
+                    .unit(value.getFirst())
+                    .pricePerUnit(value.getSecond())
+                    .build();
+            unitProducts.add(unitProd);
+        }
+
+        System.out.println("Return");
+        return unitProducts;
     }
 }

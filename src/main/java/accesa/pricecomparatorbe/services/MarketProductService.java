@@ -1,6 +1,7 @@
 package accesa.pricecomparatorbe.services;
 
 import accesa.pricecomparatorbe.dtos.MarketProductDTO;
+import accesa.pricecomparatorbe.dtos.ProductWithPricePerUnitDTO;
 import accesa.pricecomparatorbe.dtos.UpdateDiscountDTO;
 import accesa.pricecomparatorbe.dtos.UpdatePriceDTO;
 import accesa.pricecomparatorbe.model.MarketProduct;
@@ -34,4 +35,6 @@ public interface MarketProductService {
     PriceHistory getHistoryForProduct(Long id) throws ValidationException;
 
     Map<MarketProduct, TreeMap<LocalDate, Double>> getHistories(Long retailerId, Long categoryId, Long brandId);
+
+    List<ProductWithPricePerUnitDTO> getProductsWithPricePerUnit();
 }

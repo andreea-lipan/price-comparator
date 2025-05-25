@@ -30,7 +30,8 @@ public class PriceHistoryServiceImpl implements PriceHistoryService {
                 .discountChanges(new ArrayList<>())
                 .build();
         priceHistory.addPrice(price);
-        priceHistory.addDiscount(discount);
+        if (discount != null)
+            priceHistory.addDiscount(discount);
         priceHistoryRepository.save(priceHistory);
     }
 

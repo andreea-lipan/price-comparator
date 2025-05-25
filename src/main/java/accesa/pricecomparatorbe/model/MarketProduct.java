@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.util.Pair;
 
 @Entity
 @NoArgsConstructor
@@ -41,5 +42,45 @@ public class MarketProduct {
 
     public boolean hasActiveDiscount() {
         return discount != null && discount.isDiscountCurrent();
+    }
+
+    public Pair<String, Double> getValuePerUnit() {
+        String unit = product.getUnit();
+        double price = getPriceWithDiscount();
+        double quantity = product.getQuantity();
+        double newPrice = 0.0;
+
+        switch (unit) {
+            case "g": {
+                newPrice = (1000.0 * price) / quantity;
+                unit = "kg";
+                break;
+            }
+            case "kg": {
+                newPrice = price / quantity;
+                unit = "kg";
+                break;
+            }
+            case "ml": {
+                newPrice = (1000.0 * price) / quantity;
+                unit = "l";
+                break;
+            }
+            case "l": {
+                newPrice = price / quantity;
+                unit = "l";
+                break;
+            }
+            case "buc": {
+                newPrice = price / quantity;
+                unit = "buc";
+                break;
+            }
+            default: {
+                newPrice = price;
+                break;
+            }
+        }
+        return Pair.of(unit, newPrice);
     }
 }
